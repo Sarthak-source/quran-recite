@@ -5,7 +5,10 @@ class StartListening extends SpeechEvent {
   StartListening(this.targetWords);
 }
 
-class StopListening extends SpeechEvent {}
+class StopListening extends SpeechEvent {
+  final List<String> targetWords; // ✅ Now supports multiple lines
+  StopListening(this.targetWords);
+}
 
 class SpeechRecognized extends SpeechEvent {
   final String recognizedWords;
