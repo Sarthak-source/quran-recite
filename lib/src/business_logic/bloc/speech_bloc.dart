@@ -67,7 +67,8 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
 
     _restartTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
       await _speechService.stopListening(); // Ensure it's stopped
-      await Future.delayed(Duration(milliseconds: 500)); // Small buffer time
+      await Future.delayed(
+          const Duration(milliseconds: 500)); // Small buffer time
       _speechService.listen((recognizedWords) {
         add(SpeechRecognized(recognizedWords, targetWords));
       });
@@ -105,11 +106,8 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
     for (int i = 1; i <= len1; i++) {
       for (int j = 1; j <= len2; j++) {
         int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
-        dp[i][j] = [
-          dp[i - 1][j] + 1,
-          dp[i][j - 1] + 1,
-          dp[i - 1][j - 1] + cost
-        ].reduce((a, b) => a < b ? a : b);
+        dp[i][j] = [dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost]
+            .reduce((a, b) => a < b ? a : b);
       }
     }
     return dp[len1][len2];
