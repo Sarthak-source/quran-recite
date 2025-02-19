@@ -6,29 +6,46 @@ import '../../business_logic/bloc/speach_state.dart';
 import '../../business_logic/bloc/speech_bloc.dart';
 
 class SpeakButton extends StatelessWidget {
- final List<String> targetWords; // ✅ Change to List<String>
+  final List<String> targetWords;
 
-  SpeakButton({required this.targetWords});
+  const SpeakButton({super.key, required this.targetWords});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SpeechBloc, SpeechState>(
       builder: (context, state) {
         bool isListening = state is SpeechListening;
-        
-        return ElevatedButton(
-          onPressed: () {
+
+        return GestureDetector(
+          onTap: () {
             if (isListening) {
-              context.read<SpeechBloc>().add(StopListening());
+              context.read<SpeechBloc>().add(StopListening(targetWords));
             } else {
               context.read<SpeechBloc>().add(StartListening(targetWords));
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isListening ? Colors.red : Colors.blue,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: isListening ? Colors.grey[600] : Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(
+              isListening ? Icons.mic_external_off : Icons.mic,
+              color: isListening ? Colors.white : Colors.red,
+              size: 30,
+            ),
           ),
-          child: Text(isListening ? "Stop Listening" : "Speak"),
         );
       },
     );
