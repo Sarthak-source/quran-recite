@@ -36,7 +36,7 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
                 recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
 
             bool exactMatch = targetWord == recognizedWord;
-            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 3);
+            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
             bool partialMatch = recognizedWord.contains(targetWord) ||
                 targetWord.contains(recognizedWord);
 
@@ -65,7 +65,9 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
   void _startContinuousListening(List<String> targetWords) {
     _stopContinuousListening(); // Stop existing timer
 
-    _restartTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    //log(targetWords.toString());
+
+    _restartTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       await _speechService.stopListening(); // Ensure it's stopped
       await Future.delayed(
           const Duration(milliseconds: 500)); // Small buffer time

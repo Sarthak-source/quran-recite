@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       if (state is SpeechSuccess) {
                         textColor =
-                            wordMatches[index] ? Colors.green : Colors.red;
+                            wordMatches[index] ? Colors.green : Colors.grey;
                       }
 
                       return SelectableText(
@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (index < state.wordMatches.length) {
                           textColor = state.wordMatches[index]
                               ? Colors.green
-                              : Colors.red;
+                              : Colors.grey;
                         }
                       }
 
@@ -178,3 +178,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

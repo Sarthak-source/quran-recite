@@ -48,8 +48,8 @@ class SpeechService {
           partialResults: true,
           onDevice: false, // Change to true for offline mode
         ),
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 50),
+        pauseFor: const Duration(seconds: 50),
         localeId: "ar",
       );
     } else {
