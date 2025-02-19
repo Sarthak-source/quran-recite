@@ -45,8 +45,8 @@ class SpeechService {
         print("📝 Recognized words: ${result.recognizedWords}");
         onResult(result.recognizedWords);
       },
-      listenFor: Duration(minutes: 10), // Keep listening for a long time
-      pauseFor: Duration(seconds: 1000), // Allow pauses in speech
+      listenFor: const Duration(minutes: 10), // Keep listening for a long time
+      pauseFor: const Duration(seconds: 1000), // Allow pauses in speech
       localeId: "ar",
       //listenMode:
     );

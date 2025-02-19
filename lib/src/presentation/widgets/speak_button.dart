@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../business_logic/bloc/speach_event.dart';
 import '../../business_logic/bloc/speach_state.dart';
 import '../../business_logic/bloc/speech_bloc.dart';
@@ -23,11 +24,11 @@ class SpeakButton extends StatelessWidget {
               context.read<SpeechBloc>().add(StartListening(targetWords));
             }
           },
-          child: Text(isListening ? "Stop Listening" : "Speak"),
           style: ElevatedButton.styleFrom(
             backgroundColor: isListening ? Colors.red : Colors.blue,
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
+          child: Text(isListening ? "Stop Listening" : "Speak"),
         );
       },
     );
