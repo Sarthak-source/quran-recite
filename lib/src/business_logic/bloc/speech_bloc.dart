@@ -26,30 +26,40 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
       List<String> recognizedWordsWithoutDiacritics =
           removeDiacritics(event.recognizedWords).split(' ');
 
-      List<bool> wordMatches = List.generate(
-        targetWordsWithoutDiacritics.length,
-        (index) {
-          if (index < recognizedWordsWithoutDiacritics.length) {
-            String targetWord =
-                targetWordsWithoutDiacritics[index].toLowerCase().trim();
-            String recognizedWord =
-                recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
+      Set<String> targetWordsSet = targetWordsWithoutDiacritics
+          .map((word) => word.toLowerCase().trim())
+          .toSet();
 
-            bool exactMatch = targetWord == recognizedWord;
-            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
-            bool partialMatch = recognizedWord.contains(targetWord) ||
-                targetWord.contains(recognizedWord);
+      List<bool> wordMatches = recognizedWordsWithoutDiacritics.map((word) {
+        word = word.toLowerCase().trim();
+        return targetWordsSet.contains(word) ||
+            targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
+      }).toList();
 
-            bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
+      // List<bool> wordMatches = List.generate(
+      //   targetWordsWithoutDiacritics.length,
+      //   (index) {
+      //     if (index < recognizedWordsWithoutDiacritics.length) {
+      //       String targetWord =
+      //           targetWordsWithoutDiacritics[index].toLowerCase().trim();
+      //       String recognizedWord =
+      //           recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
 
-            log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
-                "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
+      //       bool exactMatch = targetWord == recognizedWord;
+      //       bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
+      //       bool partialMatch = recognizedWord.contains(targetWord) ||
+      //           targetWord.contains(recognizedWord);
 
-            return finalMatch;
-          }
-          return false;
-        },
-      );
+      //       bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
+
+      //       log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
+      //           "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
+
+      //       return finalMatch;
+      //     }
+      //     return false;
+      //   },
+      // );
 
       log("✅ Word Matches: $wordMatches");
 
@@ -67,10 +77,10 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
 
     //log(targetWords.toString());
 
-    _restartTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+    _restartTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       await _speechService.stopListening(); // Ensure it's stopped
       await Future.delayed(
-          const Duration(milliseconds: 500)); // Small buffer time
+          const Duration(microseconds: 500)); // Small buffer time
       _speechService.listen((recognizedWords) {
         add(SpeechRecognized(recognizedWords, targetWords));
       });
@@ -94,24 +104,25 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
   }
 
   int levenshteinDistance(String s1, String s2) {
-    int len1 = s1.length, len2 = s2.length;
-    List<List<int>> dp =
-        List.generate(len1 + 1, (i) => List.filled(len2 + 1, 0));
-
-    for (int i = 0; i <= len1; i++) {
-      dp[i][0] = i;
-    }
-    for (int j = 0; j <= len2; j++) {
-      dp[0][j] = j;
+    if (s1.length < s2.length) {
+      final temp = s1;
+      s1 = s2;
+      s2 = temp;
     }
 
-    for (int i = 1; i <= len1; i++) {
-      for (int j = 1; j <= len2; j++) {
+    List<int> prev = List.generate(s2.length + 1, (i) => i);
+    List<int> curr = List.filled(s2.length + 1, 0);
+
+    for (int i = 1; i <= s1.length; i++) {
+      curr[0] = i;
+      for (int j = 1; j <= s2.length; j++) {
         int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
-        dp[i][j] = [dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost]
+        curr[j] = [curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost]
             .reduce((a, b) => a < b ? a : b);
       }
+      prev = List.from(curr);
     }
-    return dp[len1][len2];
+
+    return curr[s2.length];
   }
 }
