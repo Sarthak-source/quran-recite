@@ -26,40 +26,40 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
       List<String> recognizedWordsWithoutDiacritics =
           removeDiacritics(event.recognizedWords).split(' ');
 
-      Set<String> targetWordsSet = targetWordsWithoutDiacritics
-          .map((word) => word.toLowerCase().trim())
-          .toSet();
+      // Set<String> targetWordsSet = targetWordsWithoutDiacritics
+      //     .map((word) => word.toLowerCase().trim())
+      //     .toSet();
 
-      List<bool> wordMatches = recognizedWordsWithoutDiacritics.map((word) {
-        word = word.toLowerCase().trim();
-        return targetWordsSet.contains(word) ||
-            targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
-      }).toList();
+      // List<bool> wordMatches = recognizedWordsWithoutDiacritics.map((word) {
+      //   word = word.toLowerCase().trim();
+      //   return targetWordsSet.contains(word) ||
+      //       targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
+      // }).toList();
 
-      // List<bool> wordMatches = List.generate(
-      //   targetWordsWithoutDiacritics.length,
-      //   (index) {
-      //     if (index < recognizedWordsWithoutDiacritics.length) {
-      //       String targetWord =
-      //           targetWordsWithoutDiacritics[index].toLowerCase().trim();
-      //       String recognizedWord =
-      //           recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
+      List<bool> wordMatches = List.generate(
+        targetWordsWithoutDiacritics.length,
+        (index) {
+          if (index < recognizedWordsWithoutDiacritics.length) {
+            String targetWord =
+                targetWordsWithoutDiacritics[index].toLowerCase().trim();
+            String recognizedWord =
+                recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
 
-      //       bool exactMatch = targetWord == recognizedWord;
-      //       bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
-      //       bool partialMatch = recognizedWord.contains(targetWord) ||
-      //           targetWord.contains(recognizedWord);
+            bool exactMatch = targetWord == recognizedWord;
+            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
+            bool partialMatch = recognizedWord.contains(targetWord) ||
+                targetWord.contains(recognizedWord);
 
-      //       bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
+            bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
 
-      //       log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
-      //           "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
+            log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
+                "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
 
-      //       return finalMatch;
-      //     }
-      //     return false;
-      //   },
-      // );
+            return finalMatch;
+          }
+          return false;
+        },
+      );
 
       log("✅ Word Matches: $wordMatches");
 
