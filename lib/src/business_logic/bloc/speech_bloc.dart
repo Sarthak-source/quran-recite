@@ -46,7 +46,7 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
                 recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
 
             bool exactMatch = targetWord == recognizedWord;
-            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
+            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 2);
             bool partialMatch = recognizedWord.contains(targetWord) ||
                 targetWord.contains(recognizedWord);
 

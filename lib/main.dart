@@ -22,6 +22,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
   @override
@@ -29,19 +30,29 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
+      duration: const Duration(seconds: 2),
+    );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    //Navigator.pushReplacement(
-    // context, MaterialPageRoute(builder: (context) => HomeScreen()));
 
-    Future.delayed(const Duration(seconds: 5), () {
+    _controller.forward();
+
+    Future.delayed(const Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
       );
     });
   }
@@ -55,65 +66,87 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black, width: 2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Text(
-            'بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيْمِ',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+      body: Stack(
+        children: [
+          /// **Full-Screen Background Image**
+          Positioned.fill(
+            child: Image.asset(
+              'assets/newbackgrnd.jpg',
+              fit: BoxFit.cover,
             ),
           ),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-                'assets/newbackgrnd.jpg'), // Replace with your image path
-            fit: BoxFit.cover,
-          ),
-        ),
-        // color: Color(0xFF40E0D0), // Light Algae Green
-        child: Center(
-          child: ScaleTransition(
-            scale: _scaleAnimation,
+
+          /// **Dark Gradient Overlay for Readability**
+          Positioned.fill(
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.4,
-              height: MediaQuery.of(context).size.width * 0.4,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFFFFD700), // Gold color
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  'القرآن الكريم',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.06,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFFD700), // Gold color
-                  ),
-                  textAlign: TextAlign.center,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
                 ),
               ),
             ),
           ),
-        ),
+
+          /// **App Title at the Top**
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  border: Border.all(color: Colors.black, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيْمِ',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          /// **Animated Centered Content**
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withOpacity(0.7),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withOpacity(0.8),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    'القرآن الكريم',
+                    style: TextStyle(
+                      fontFamily: 'Amiri', // Using the local font
+                      fontSize: MediaQuery.of(context).size.width * 0.08,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -128,12 +161,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SpeechBloc(speechService),
-      child:   const MaterialApp(
+      child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home:  HomeScreen(),
+        home: SplashScreen(),
       ),
     );
   }
 }
-
-
