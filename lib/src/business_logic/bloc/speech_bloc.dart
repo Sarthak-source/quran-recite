@@ -26,40 +26,47 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
       List<String> recognizedWordsWithoutDiacritics =
           removeDiacritics(event.recognizedWords).split(' ');
 
-      // Set<String> targetWordsSet = targetWordsWithoutDiacritics
-      //     .map((word) => word.toLowerCase().trim())
-      //     .toSet();
+      Set<String> targetWordsSet = targetWordsWithoutDiacritics
+          .map((word) => word.toLowerCase().trim())
+          .toSet();
 
-      // List<bool> wordMatches = recognizedWordsWithoutDiacritics.map((word) {
-      //   word = word.toLowerCase().trim();
-      //   return targetWordsSet.contains(word) ||
-      //       targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
-      // }).toList();
+      List<bool> wordMatches =
+          List.filled(recognizedWordsWithoutDiacritics.length, false);
 
-      List<bool> wordMatches = List.generate(
-        targetWordsWithoutDiacritics.length,
-        (index) {
-          if (index < recognizedWordsWithoutDiacritics.length) {
-            String targetWord =
-                targetWordsWithoutDiacritics[index].toLowerCase().trim();
-            String recognizedWord =
-                recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
+      wordMatches = recognizedWordsWithoutDiacritics.map((word) {
+        word = word.toLowerCase().trim();
+        return targetWordsSet.contains(word) ||
+            targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
+      }).toList();
 
-            bool exactMatch = targetWord == recognizedWord;
-            bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 2);
-            bool partialMatch = recognizedWord.contains(targetWord) ||
-                targetWord.contains(recognizedWord);
+            // bool exactMatch = targetWord == recognizedWord;
+            // bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 2);
+            // bool partialMatch = recognizedWord.contains(targetWord) ||
+            //     targetWord.contains(recognizedWord);
+      // List<bool> wordMatches = List.generate(
+      //   targetWordsWithoutDiacritics.length,
+      //   (index) {
+      //     if (index < recognizedWordsWithoutDiacritics.length) {
+      //       String targetWord =
+      //           targetWordsWithoutDiacritics[index].toLowerCase().trim();
+      //       String recognizedWord =
+      //           recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
 
-            bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
+      //       bool exactMatch = targetWord == recognizedWord;
+      //       bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 1);
+      //       bool partialMatch = recognizedWord.contains(targetWord) ||
+      //           targetWord.contains(recognizedWord);
 
-            log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
-                "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
+      //       bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
 
-            return finalMatch;
-          }
-          return false;
-        },
-      );
+      //       log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
+      //           "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
+
+      //       return finalMatch;
+      //     }
+      //     return false;
+      //   },
+      // );
 
       log("✅ Word Matches: $wordMatches");
 
@@ -78,12 +85,12 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
     //log(targetWords.toString());
 
     //_restartTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
-      //await _speechService.stopListening(); // Ensure it's stopped
-      // await Future.delayed(
-      //     const Duration(microseconds: 500)); // Small buffer time
-      _speechService.listen((recognizedWords) {
-        add(SpeechRecognized(recognizedWords, targetWords));
-      });
+    //await _speechService.stopListening(); // Ensure it's stopped
+    // await Future.delayed(
+    //     const Duration(microseconds: 500)); // Small buffer time
+    _speechService.listen((recognizedWords) {
+      add(SpeechRecognized(recognizedWords, targetWords));
+    });
     //});
   }
 
