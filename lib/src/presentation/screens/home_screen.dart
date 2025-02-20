@@ -134,34 +134,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.white,
                   ),
                 ),
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Wrap(
-                    spacing: 8, // Space between words
-                    children:
-                        List.generate(wordsWithoutDiacritics.length, (index) {
-                      Color textColor = Colors.white; // Default color
+                // Directionality(
+                //   textDirection: TextDirection.rtl,
+                //   child: Wrap(
+                //     spacing: 8, // Space between words
+                //     children:
+                //         List.generate(wordsWithoutDiacritics.length, (index) {
+                //       Color textColor = Colors.white; // Default color
 
-                      if (state is SpeechSuccess) {
-                        if (index < state.wordMatches.length) {
-                          textColor = state.wordMatches[index]
-                              ? Colors.green
-                              : Colors.grey;
-                        }
-                      }
+                //       if (state is SpeechSuccess) {
+                //         if (index < state.wordMatches.length) {
+                //           textColor = state.wordMatches[index]
+                //               ? Colors.green
+                //               : Colors.grey;
+                //         }
+                //       }
 
-                      return SelectableText(
-                        wordsWithoutDiacritics[index],
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      );
-                    }),
-                  ),
-                ),
+                //       return SelectableText(
+                //         wordsWithoutDiacritics[index],
+                //         style: TextStyle(
+                //           fontSize: 24,
+                //           fontWeight: FontWeight.bold,
+                //           color: textColor,
+                //         ),
+                //         textDirection: TextDirection.rtl,
+                //       );
+                //     }),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 SpeakButton(targetWords: wordsWithoutDiacritics),
                 const SizedBox(height: 20),

@@ -77,14 +77,14 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
 
     //log(targetWords.toString());
 
-    _restartTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
-      await _speechService.stopListening(); // Ensure it's stopped
-      await Future.delayed(
-          const Duration(microseconds: 500)); // Small buffer time
+    //_restartTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      //await _speechService.stopListening(); // Ensure it's stopped
+      // await Future.delayed(
+      //     const Duration(microseconds: 500)); // Small buffer time
       _speechService.listen((recognizedWords) {
         add(SpeechRecognized(recognizedWords, targetWords));
       });
-    });
+    //});
   }
 
   void _stopContinuousListening() {

@@ -46,7 +46,7 @@ class SpeechService {
         listenOptions: stt.SpeechListenOptions(
           listenMode: stt.ListenMode.dictation,
           partialResults: true,
-          onDevice: true, // Change to true for offline mode
+          onDevice: false, // Change to true for offline mode
         ),
         listenFor: const Duration(seconds: 50),
         pauseFor: const Duration(seconds: 50),
