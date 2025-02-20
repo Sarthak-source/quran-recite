@@ -11,6 +11,8 @@ import '../../business_logic/bloc/speech_bloc.dart';
 import '../widgets/speak_button.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -34,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     //await speechService.initialize();
-    fetchSurahFatiha();
+    fetchData();
   }
 
   String removeDiacritics(String text) {
@@ -47,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> targetWordsWithoutDiacritics = [];
 
   //final List<String> targetWords = [];
-  Future<void> fetchSurahFatiha() async {
+  Future<void> fetchData() async {
     try {
       final response =
           await http.get(Uri.parse('https://api.alquran.cloud/v1/surah/1'));
@@ -63,9 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
               .map((ayah) => removeDiacritics(ayah['text']).toString())
               .toList();
 
-          log("targetWords $targetWords");
+          //log("targetWords $targetWords");
 
-          log("targetWordsWithoutDiacritics $targetWordsWithoutDiacritics");
+          //log("targetWordsWithoutDiacritics $targetWordsWithoutDiacritics");
         });
       }
     } catch (error) {
@@ -77,27 +79,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Speech Recognition")),
+      backgroundColor: Colors.black,
+      //appBar: AppBar(title: const Text("Speech Recognition")),
       body: Center(
         child: BlocBuilder<SpeechBloc, SpeechState>(
           builder: (context, state) {
             List<bool> wordMatches = [];
 
-           
             String recognizedWords = "";
             if (state is SpeechSuccess) {
               wordMatches = state.wordMatches;
               recognizedWords = state.recognizedWords;
             }
 
-            log('targetWords $targetWords');
-
             List<String> words =
                 targetWords.expand((sentence) => sentence.split(' ')).toList();
-            // List<String> recognizedList = recognizedWords.split(' ');
-
-            // words = words.reversed.toList();
-            // log(words.toString());
 
             List<String> wordsWithoutDiacritics = targetWordsWithoutDiacritics
                 .expand((sentence) => sentence.split(' '))
@@ -111,11 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Wrap(
                     spacing: 8, // Space between words
                     children: List.generate(words.length, (index) {
-                      Color textColor = Colors.black; // Default color
+                      Color textColor = Colors.white; // Default color
 
                       if (state is SpeechSuccess) {
                         textColor =
-                            wordMatches[index] ? Colors.green : Colors.red;
+                            wordMatches[index] ? Colors.green : Colors.grey;
                       }
 
                       return SelectableText(
@@ -130,45 +126,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     }),
                   ),
                 ),
-
-                const Text('-------------------------'),
-
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Wrap(
-                    spacing: 8, // Space between words
-                    children:
-                        List.generate(wordsWithoutDiacritics.length, (index) {
-                      Color textColor = Colors.black; // Default color
-
-                      if (state is SpeechSuccess) {
-                        if (index < state.wordMatches.length) {
-                          textColor = state.wordMatches[index]
-                              ? Colors.green
-                              : Colors.red;
-                        }
-                      }
-
-                      return SelectableText(
-                        wordsWithoutDiacritics[index],
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                        textDirection: TextDirection.rtl,
-                      );
-                    }),
+                const Text(
+                  '--------------------------------------------------',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
+                // Directionality(
+                //   textDirection: TextDirection.rtl,
+                //   child: Wrap(
+                //     spacing: 8, // Space between words
+                //     children:
+                //         List.generate(wordsWithoutDiacritics.length, (index) {
+                //       Color textColor = Colors.white; // Default color
 
+                //       if (state is SpeechSuccess) {
+                //         if (index < state.wordMatches.length) {
+                //           textColor = state.wordMatches[index]
+                //               ? Colors.green
+                //               : Colors.grey;
+                //         }
+                //       }
+
+                //       return SelectableText(
+                //         wordsWithoutDiacritics[index],
+                //         style: TextStyle(
+                //           fontSize: 24,
+                //           fontWeight: FontWeight.bold,
+                //           color: textColor,
+                //         ),
+                //         textDirection: TextDirection.rtl,
+                //       );
+                //     }),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
-                SpeakButton(targetWords: wordsWithoutDiacritics), // **Button stays here**
+                SpeakButton(targetWords: wordsWithoutDiacritics),
                 const SizedBox(height: 20),
-
-                //SpeakButton(targetWords: wordsWithoutDiacritics),
-
-                // Recognized Words
                 Text(
                   "You said: ${recognizedWords.isNotEmpty ? recognizedWords : "..."}",
                   style: const TextStyle(
@@ -182,3 +178,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
