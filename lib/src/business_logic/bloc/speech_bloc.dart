@@ -47,14 +47,25 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
 
       // Post-process wordMatches: Only keep contiguous blocks (2 or more trues).
       List<bool> filteredMatches = List.from(wordMatches);
-      for (int i = 0; i < wordMatches.length; i++) {
-        if (wordMatches[i]) {
-          bool hasLeftNeighbor = i > 0 && wordMatches[i - 1];
-          bool hasRightNeighbor =
-              i < wordMatches.length - 1 && wordMatches[i + 1];
-          // If neither neighbor is true, then it's an isolated match.
-          if (!hasLeftNeighbor && !hasRightNeighbor) {
-            filteredMatches[i] = false;
+      int n = wordMatches.length;
+      int i = 0;
+      while (i < n) {
+        if (!wordMatches[i]) {
+          i++;
+          continue;
+        }
+
+        // Start of a contiguous block of true values.
+        int start = i;
+        while (i < n && wordMatches[i]) {
+          i++;
+        }
+
+        int blockLength = i - start;
+        // If the block is smaller than 3, set all values in that block to false.
+        if (blockLength < 3) {
+          for (int j = start; j < i; j++) {
+            filteredMatches[j] = false;
           }
         }
       }
