@@ -18,82 +18,52 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
     });
 
     on<SpeechRecognized>((event, emit) {
-      List<String> targetWordsWithoutDiacritics = event.targetWords
-          .map((line) => removeDiacritics(line))
-          .expand((line) => line.split(' '))
-          .map((word) => word.toLowerCase().trim())
-          .toList();
+      String targetPhrase =
+          removeDiacritics(event.targetWords.join(' ')).toLowerCase().trim();
+      String recognizedPhrase =
+          removeDiacritics(event.recognizedWords).toLowerCase().trim();
 
-      List<String> recognizedWordsWithoutDiacritics =
-          removeDiacritics(event.recognizedWords)
-              .toLowerCase()
-              .split(' ')
-              .map((word) => word.trim())
-              .toList();
+      bool isMatch = recognizedPhrase.contains(targetPhrase) ||
+          isFuzzyMatch(targetPhrase, recognizedPhrase, 2);
 
-      Set<String> targetWordsSet = targetWordsWithoutDiacritics.toSet();
-      Set<String> recognizedWordsSet = recognizedWordsWithoutDiacritics.toSet();
+      log("✅ Target Phrase: $targetPhrase");
+      log("🎙️ Recognized Phrase: $recognizedPhrase");
+      log("🔍 Match: $isMatch");
 
-      List<bool> wordMatches = targetWordsWithoutDiacritics.map((targetWord) {
-        return recognizedWordsSet.contains(targetWord) ||
-            recognizedWordsSet.any((recognizedWord) =>
-                isFuzzyMatch(targetWord, recognizedWord, 2) ||
-                recognizedWord.contains(targetWord) ||
-                targetWord.contains(recognizedWord));
-      }).toList();
+      // Convert the boolean match result into a List<bool> (to keep the original function signature)
+      List<bool> phraseMatch = List.filled(event.targetWords.length, isMatch);
 
-      log("✅ Target Words: $targetWordsSet");
-      log("🎙️ Recognized Words: $recognizedWordsSet");
-      log("🔍 Word Matches: $wordMatches");
-
-      emit(SpeechSuccess(event.recognizedWords, wordMatches));
+      emit(SpeechSuccess(event.recognizedWords, phraseMatch));
     });
 
     // on<SpeechRecognized>((event, emit) {
     //   List<String> targetWordsWithoutDiacritics = event.targetWords
     //       .map((line) => removeDiacritics(line))
     //       .expand((line) => line.split(' '))
+    //       .map((word) => word.toLowerCase().trim())
     //       .toList();
 
     //   List<String> recognizedWordsWithoutDiacritics =
-    //       removeDiacritics(event.recognizedWords).split(' ');
+    //       removeDiacritics(event.recognizedWords)
+    //           .toLowerCase()
+    //           .split(' ')
+    //           .map((word) => word.trim())
+    //           .toList();
 
-    //   // Set<String> targetWordsSet = targetWordsWithoutDiacritics
-    //   //     .map((word) => word.toLowerCase().trim())
-    //   //     .toSet();
+    //   Set<String> targetWordsSet = targetWordsWithoutDiacritics.toSet();
+    //   Set<String> recognizedWordsSet = recognizedWordsWithoutDiacritics.toSet();
 
-    //   // List<bool> wordMatches = recognizedWordsWithoutDiacritics.map((word) {
-    //   //   word = word.toLowerCase().trim();
-    //   //   return targetWordsSet.contains(word) ||
-    //   //       targetWordsSet.any((target) => isFuzzyMatch(target, word, 1));
-    //   // }).toList();
+    //   List<bool> wordMatches = targetWordsWithoutDiacritics.map((targetWord) {
+    //     return recognizedWordsSet.contains(targetWord) ||
+    //         recognizedWordsSet.any((recognizedWord) =>
+    //             isFuzzyMatch(targetWord, recognizedWord, 2) ||
+    //             recognizedWord.contains(targetWord) ||
+    //             targetWord.contains(recognizedWord));
+    //   }).toList();
 
-    //   List<bool> wordMatches = List.generate(
-    //     targetWordsWithoutDiacritics.length,
-    //     (index) {
-    //       if (index < recognizedWordsWithoutDiacritics.length) {
-    //         String targetWord =
-    //             targetWordsWithoutDiacritics[index].toLowerCase().trim();
-    //         String recognizedWord =
-    //             recognizedWordsWithoutDiacritics[index].toLowerCase().trim();
-
-    //         bool exactMatch = targetWord == recognizedWord;
-    //         bool fuzzyMatch = isFuzzyMatch(targetWord, recognizedWord, 2);
-    //         bool partialMatch = recognizedWord.contains(targetWord) ||
-    //             targetWord.contains(recognizedWord);
-
-    //         bool finalMatch = exactMatch || fuzzyMatch || partialMatch;
-
-    //         log("🔎 Comparing: '$targetWord' with '$recognizedWord' → "
-    //             "${exactMatch ? "✅ Exact Match" : fuzzyMatch ? "🟡 Fuzzy Match" : partialMatch ? "🟠 Partial Match" : "❌ Mismatch"}");
-
-    //         return finalMatch;
-    //       }
-    //       return false;
-    //     },
-    //   );
-
-    //   log("✅ Word Matches: $wordMatches");
+    //   log("✅ Target Words: $targetWordsSet");
+    //   log("🎙️ Recognized Words: $recognizedWordsSet");
+    //   log("🔍 Word Matches: $wordMatches");
 
     //   emit(SpeechSuccess(event.recognizedWords, wordMatches));
     // });
