@@ -18,84 +18,54 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
     });
 
     on<SpeechRecognized>((event, emit) {
-      // Normalize the target words.
-      final List<String> normalizedTarget = event.targetWords
-          .map((word) => removeDiacritics(word).toLowerCase().trim())
+      // Normalize target words.
+      List<String> targetWordsWithoutDiacritics = event.targetWords
+          .map((line) => removeDiacritics(line))
+          .expand((line) => line.split(' '))
+          .map((word) => word.toLowerCase().trim())
           .toList();
 
-      // Normalize the recognized speech into a list of words.
-      final List<String> normalizedRecognized =
+      // Normalize recognized words.
+      List<String> recognizedWordsWithoutDiacritics =
           removeDiacritics(event.recognizedWords)
               .toLowerCase()
-              .split(RegExp(r'\s+'))
+              .split(' ')
               .map((word) => word.trim())
-              .where((word) => word.isNotEmpty)
               .toList();
 
-      bool foundContiguous = false;
+      Set<String> targetWordsSet = targetWordsWithoutDiacritics.toSet();
+      Set<String> recognizedWordsSet = recognizedWordsWithoutDiacritics.toSet();
 
-      // Slide a window over the recognized words with the same length as the target phrase.
-      for (int i = 0;
-          i <= normalizedRecognized.length - normalizedTarget.length;
-          i++) {
-        bool windowMatches = true;
-        for (int j = 0; j < normalizedTarget.length; j++) {
-          // Check each word using fuzzy matching with a threshold (2 in this example).
-          if (!isFuzzyMatch(
-              normalizedTarget[j], normalizedRecognized[i + j], 2)) {
-            windowMatches = false;
-            break;
+      // Calculate initial word matches.
+      List<bool> wordMatches = targetWordsWithoutDiacritics.map((targetWord) {
+        return recognizedWordsSet.contains(targetWord) ||
+            recognizedWordsSet.any((recognizedWord) =>
+                isFuzzyMatch(targetWord, recognizedWord, 2) ||
+                recognizedWord.contains(targetWord) ||
+                targetWord.contains(recognizedWord));
+      }).toList();
+
+      // Post-process wordMatches: Only keep contiguous blocks (2 or more trues).
+      List<bool> filteredMatches = List.from(wordMatches);
+      for (int i = 0; i < wordMatches.length; i++) {
+        if (wordMatches[i]) {
+          bool hasLeftNeighbor = i > 0 && wordMatches[i - 1];
+          bool hasRightNeighbor =
+              i < wordMatches.length - 1 && wordMatches[i + 1];
+          // If neither neighbor is true, then it's an isolated match.
+          if (!hasLeftNeighbor && !hasRightNeighbor) {
+            filteredMatches[i] = false;
           }
-        }
-        if (windowMatches) {
-          foundContiguous = true;
-          break;
         }
       }
 
-      log("✅ Target Words: $normalizedTarget");
-      log("🎙️ Recognized Words: $normalizedRecognized");
-      log("🔍 Contiguous Match Found: $foundContiguous");
+      log("✅ Target Words: $targetWordsSet");
+      log("🎙️ Recognized Words: $recognizedWordsSet");
+      log("🔍 Original Word Matches: $wordMatches");
+      log("🔍 Filtered Word Matches: $filteredMatches");
 
-      // If a contiguous match is found, highlight the entire phrase;
-      // otherwise, no words are highlighted.
-      List<bool> phraseMatch =
-          List.filled(event.targetWords.length, foundContiguous);
-
-      emit(SpeechSuccess(event.recognizedWords, phraseMatch));
+      emit(SpeechSuccess(event.recognizedWords, filteredMatches));
     });
-
-    // on<SpeechRecognized>((event, emit) {
-    //   List<String> targetWordsWithoutDiacritics = event.targetWords
-    //       .map((line) => removeDiacritics(line))
-    //       .expand((line) => line.split(' '))
-    //       .map((word) => word.toLowerCase().trim())
-    //       .toList();
-
-    //   List<String> recognizedWordsWithoutDiacritics =
-    //       removeDiacritics(event.recognizedWords)
-    //           .toLowerCase()
-    //           .split(' ')
-    //           .map((word) => word.trim())
-    //           .toList();
-
-    //   Set<String> targetWordsSet = targetWordsWithoutDiacritics.toSet();
-    //   Set<String> recognizedWordsSet = recognizedWordsWithoutDiacritics.toSet();
-
-    //   List<bool> wordMatches = targetWordsWithoutDiacritics.map((targetWord) {
-    //     return recognizedWordsSet.contains(targetWord) ||
-    //         recognizedWordsSet.any((recognizedWord) =>
-    //             isFuzzyMatch(targetWord, recognizedWord, 2) ||
-    //             recognizedWord.contains(targetWord) ||
-    //             targetWord.contains(recognizedWord));
-    //   }).toList();
-
-    //   log("✅ Target Words: $targetWordsSet");
-    //   log("🎙️ Recognized Words: $recognizedWordsSet");
-    //   log("🔍 Word Matches: $wordMatches");
-
-    //   emit(SpeechSuccess(event.recognizedWords, wordMatches));
-    // });
 
     on<StopListening>((event, emit) {
       _stopContinuousListening();
