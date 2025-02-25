@@ -18,20 +18,49 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
     });
 
     on<SpeechRecognized>((event, emit) {
-      String targetPhrase =
-          removeDiacritics(event.targetWords.join(' ')).toLowerCase().trim();
-      String recognizedPhrase =
-          removeDiacritics(event.recognizedWords).toLowerCase().trim();
+      // Normalize the target words.
+      final List<String> normalizedTarget = event.targetWords
+          .map((word) => removeDiacritics(word).toLowerCase().trim())
+          .toList();
 
-      bool isMatch = recognizedPhrase.contains(targetPhrase) ||
-          isFuzzyMatch(targetPhrase, recognizedPhrase, 2);
+      // Normalize the recognized speech into a list of words.
+      final List<String> normalizedRecognized =
+          removeDiacritics(event.recognizedWords)
+              .toLowerCase()
+              .split(RegExp(r'\s+'))
+              .map((word) => word.trim())
+              .where((word) => word.isNotEmpty)
+              .toList();
 
-      log("✅ Target Phrase: $targetPhrase");
-      log("🎙️ Recognized Phrase: $recognizedPhrase");
-      log("🔍 Match: $isMatch");
+      bool foundContiguous = false;
 
-      // Convert the boolean match result into a List<bool> (to keep the original function signature)
-      List<bool> phraseMatch = List.filled(event.targetWords.length, isMatch);
+      // Slide a window over the recognized words with the same length as the target phrase.
+      for (int i = 0;
+          i <= normalizedRecognized.length - normalizedTarget.length;
+          i++) {
+        bool windowMatches = true;
+        for (int j = 0; j < normalizedTarget.length; j++) {
+          // Check each word using fuzzy matching with a threshold (2 in this example).
+          if (!isFuzzyMatch(
+              normalizedTarget[j], normalizedRecognized[i + j], 2)) {
+            windowMatches = false;
+            break;
+          }
+        }
+        if (windowMatches) {
+          foundContiguous = true;
+          break;
+        }
+      }
+
+      log("✅ Target Words: $normalizedTarget");
+      log("🎙️ Recognized Words: $normalizedRecognized");
+      log("🔍 Contiguous Match Found: $foundContiguous");
+
+      // If a contiguous match is found, highlight the entire phrase;
+      // otherwise, no words are highlighted.
+      List<bool> phraseMatch =
+          List.filled(event.targetWords.length, foundContiguous);
 
       emit(SpeechSuccess(event.recognizedWords, phraseMatch));
     });
